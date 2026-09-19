@@ -1,5 +1,7 @@
-from aws_cdk import Stack, RemovalPolicy
+from aws_cdk import Stack, RemovalPolicy, Duration
 from aws_cdk import aws_s3 as s3
+from aws_cdk import aws_s3_notifications as s3n
+from aws_cdk import aws_lambda as _lambda
 from aws_cdk import aws_iam as iam
 from constructs import Construct
 
@@ -31,4 +33,18 @@ class TakehomeStack(Stack):
             )
         )
 
-        # Resources added in Task 3: Lambda + event notification.
+        self.processor_function = _lambda.Function(
+            self,
+            "FileProcessorFunction",
+            runtime=_lambda.Runtime.PYTHON_3_12,
+            handler="handler.lambda_handler",
+            code=_lambda.Code.from_asset("lambda"),
+            timeout=Duration.seconds(30),
+        )
+
+        self.bucket.grant_read(self.processor_function)
+
+        self.bucket.add_event_notification(
+            s3.EventType.OBJECT_CREATED,
+            s3n.LambdaDestination(self.processor_function),
+        )

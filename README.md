@@ -32,7 +32,9 @@ out to be different.
 ├── tests/unit/
 │   ├── test_takehome_stack.py    # CDK synthesized-template assertions
 │   └── test_handler.py           # Lambda logic unit tests (mocked S3)
-└── .github/workflows/ci.yml      # runs tests + cdk synth on every push/PR
+└── .github/workflows/
+    ├── ci.yml                    # runs tests + cdk synth on every push/PR
+    └── deploy.yml                # manual, OIDC-authenticated cdk deploy
 ```
 
 ## Deploying
@@ -63,6 +65,17 @@ account during development: a normal comma-separated upload parsed
 correctly, and an empty-file upload was logged as a clean error rather than
 throwing — both matching the behavior asserted in the unit tests below.
 
+### Deploying via GitHub Actions
+
+`.github/workflows/deploy.yml` runs the same `cdk bootstrap` + `cdk deploy`
+shown above, triggered manually from the Actions tab (**Run workflow** —
+deliberately not on every push, since this creates real AWS resources).
+Authentication uses GitHub's OIDC identity token traded for temporary AWS
+credentials via `aws-actions/configure-aws-credentials`, scoped to an IAM
+role whose trust policy only allows workflow runs from this exact repo to
+assume it. No AWS access keys are stored as GitHub secrets or anywhere else
+in this repo.
+
 ## Running the tests
 
 ```bash
@@ -83,8 +96,13 @@ push and pull request.
 - **Changing the bucket policy:** the `DenyInsecureTransport` statement in
   `takehome_stack.py` is the only bucket policy statement; add further
   statements the same way, via `bucket.add_to_resource_policy`.
-- **Adding a real deploy pipeline:** the CI workflow deliberately stops at
-  `cdk synth` — no AWS credentials are stored anywhere in this repo. A real
-  deploy job would authenticate via GitHub Actions' OIDC federation
-  straight to an AWS IAM role scoped to this stack, the same pattern used
-  in production CI/CD, rather than long-lived access keys.
+- **The CI workflow** (`ci.yml`) deliberately stops at `cdk synth` on every
+  push/PR — fast feedback, no AWS access needed.
+- **The deploy workflow** (`deploy.yml`) is separate and manual on purpose:
+  it authenticates via GitHub Actions' OIDC federation straight to an AWS
+  IAM role scoped to this stack (no long-lived access keys anywhere), and
+  only runs when someone explicitly clicks "Run workflow."
+- **Changing what the deploy role can touch:** its permissions live in a
+  customer-managed IAM policy in the target AWS account (not in this repo),
+  scoped to the `SixthStreetTakehomeStack` and `CDKToolkit` CloudFormation
+  stacks specifically — it can't affect anything else in the account.

@@ -34,18 +34,13 @@ jobs:
       - name: Install Python dependencies
         run: pip install -r requirements.txt
 
-      - name: DEBUG - decode OIDC token claims
-        run: |
-          TOKEN=$(curl -sS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sts.amazonaws.com" | jq -r '.value')
-          echo "$TOKEN" | cut -d. -f2 | base64 -d 2>/dev/null | jq '{iss, aud, sub}'
-
       - name: Configure AWS credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          # This role's trust policy only allows workflow runs from this exact repo
-          # (repo:KolinSmith/sixth-street-s3-lambda-takehome:*) to assume it — no static
-          # AWS keys are involved anywhere in this process.
+          # This role's trust policy only allows workflow runs from this exact repo to
+          # assume it (matched on GitHub's immutable owner/repo IDs, not just the names,
+          # so the trust survives a future rename) — no static AWS keys are involved
+          # anywhere in this process.
           role-to-assume: arn:aws:iam::249091361100:role/sixth-street-takehome-github-actions-deploy
           aws-region: us-east-1
 

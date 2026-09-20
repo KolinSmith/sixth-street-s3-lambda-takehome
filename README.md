@@ -43,9 +43,11 @@ out to be different.
 
 ## Deploying
 
-Requires the AWS CDK CLI and an AWS account with credentials configured
-(`aws configure`, or an assumed role — this repo doesn't include or require
-any stored credentials).
+Requires the AWS CDK CLI and an AWS account with credentials configured —
+`aws configure` for a manual/local deploy, or the assumed IAM role
+**`sixth-street-takehome-github-actions-deploy`** used by the GitHub
+Actions workflow below (details in "Deploying via GitHub Actions"). Either
+way, this repo doesn't include or require any stored credentials.
 
 ```bash
 python3 -m venv .venv
@@ -75,10 +77,17 @@ throwing — both matching the behavior asserted in the unit tests below.
 shown above, triggered manually from the Actions tab (**Run workflow** —
 deliberately not on every push, since this creates real AWS resources).
 Authentication uses GitHub's OIDC identity token traded for temporary AWS
-credentials via `aws-actions/configure-aws-credentials`, scoped to an IAM
-role whose trust policy only allows workflow runs from this exact repo to
-assume it. No AWS access keys are stored as GitHub secrets or anywhere else
-in this repo.
+credentials via `aws-actions/configure-aws-credentials`, assuming the IAM
+role **`sixth-street-takehome-github-actions-deploy`**
+(`arn:aws:iam::249091361100:role/sixth-street-takehome-github-actions-deploy`,
+referenced directly in `deploy.yml`). Its trust policy only allows workflow
+runs from this exact repo to assume it — matched on GitHub's immutable
+owner/repo IDs, not just the names, so the trust survives a future rename —
+and its permissions are scoped to only the `SixthStreetTakehomeStack` and
+`CDKToolkit` CloudFormation stacks; it can't touch anything else in the
+account. No AWS access keys are stored as GitHub secrets or anywhere else
+in this repo — knowing the role's name/ARN alone doesn't grant access to
+assume it.
 
 ## Running the tests
 

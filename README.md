@@ -32,6 +32,10 @@ out to be different.
 ├── tests/unit/
 │   ├── test_takehome_stack.py    # CDK synthesized-template assertions
 │   └── test_handler.py           # Lambda logic unit tests (mocked S3)
+├── docs/
+│   ├── design.md                 # design rationale — why each ambiguous
+│   │                                assignment gap was resolved the way it was
+│   └── images/architecture.png   # the Excalidraw diagram embedded above
 └── .github/workflows/
     ├── ci.yml                    # runs tests + cdk synth on every push/PR
     └── deploy.yml                # manual, OIDC-authenticated cdk deploy

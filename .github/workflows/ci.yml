@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["master"]
+
+jobs:
+  synth-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node (for the CDK CLI)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install CDK CLI
+        run: npm install -g aws-cdk
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run unit tests
+        run: pytest tests/ -v
+
+      - name: CDK synth
+        run: cdk synth
+        # No AWS credentials configured on purpose — this stack has no
+        # account/region-specific lookups, so synth succeeds without them.
+        # A real deploy job, if added later, would authenticate via GitHub
+        # OIDC federation straight to an AWS IAM role rather than stored
+        # access keys.

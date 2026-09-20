@@ -55,7 +55,7 @@ class TakehomeStack(Stack):
         self.processor_function = _lambda.Function(
             self,
             "FileProcessorFunction",
-            runtime=_lambda.Runtime.PYTHON_3_12,
+            runtime=_lambda.Runtime.PYTHON_3_14,  # latest Python runtime Lambda supports as of this build
             handler="handler.lambda_handler",   # "<filename-without-.py>.<function-name>" inside the code below — points at lambda/handler.py's lambda_handler()
             code=_lambda.Code.from_asset("lambda"),  # zip up everything in the lambda/ folder and upload it as this function's code
             timeout=Duration.seconds(30),        # kill the function if it hasn't finished in 30s (files here are tiny, this is generous)

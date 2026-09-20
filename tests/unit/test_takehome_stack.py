@@ -83,7 +83,7 @@ def test_lambda_function_created():
         "AWS::Lambda::Function",
         {
             "Handler": "handler.lambda_handler",
-            "Runtime": "python3.12",
+            "Runtime": "python3.14",
         },
     )
 

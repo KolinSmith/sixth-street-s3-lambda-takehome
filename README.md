@@ -89,6 +89,12 @@ account. No AWS access keys are stored as GitHub secrets or anywhere else
 in this repo — knowing the role's name/ARN alone doesn't grant access to
 assume it.
 
+**Exact trust policy, exact permissions policy (statement-by-statement),
+and how to recreate the role if it doesn't exist**: see
+[`docs/iam-role-setup.md`](docs/iam-role-setup.md). It currently doesn't
+exist — every AWS resource this project created was torn down after
+testing to avoid ongoing cost, and that doc has the recreation steps.
+
 ## Running the tests
 
 ```bash

@@ -89,11 +89,24 @@ account. No AWS access keys are stored as GitHub secrets or anywhere else
 in this repo — knowing the role's name/ARN alone doesn't grant access to
 assume it.
 
-**Exact trust policy, exact permissions policy (statement-by-statement),
-and how to recreate the role if it doesn't exist**: see
-[`docs/iam-role-setup.md`](docs/iam-role-setup.md). It currently doesn't
-exist — every AWS resource this project created was torn down after
-testing to avoid ongoing cost, and that doc has the recreation steps.
+**One-time setup vs. what the pipeline does on every run:** `deploy.yml`'s
+own `cdk bootstrap` step recreates the `CDKToolkit` asset infrastructure
+(S3/ECR/SSM) automatically, every time it runs — that part really is
+self-contained. What it *can't* self-provision is the OIDC identity
+provider and the IAM role it authenticates as, since creating those
+requires already being authenticated to AWS, which is the exact thing
+this step is trying to establish. Those two have to exist first, created
+once, out-of-band, using different (human) credentials — this repo's
+CDK stack and workflows never create or touch them.
+
+**Current status: recreated and live** (2026-09-22) — the OIDC provider
+and the `sixth-street-takehome-github-actions-deploy` role both exist in
+the account again, so `deploy.yml` is usable as-is. They were deleted
+once already, after the initial take-home testing, to avoid ongoing AWS
+cost while idle, and could be again — **exact trust policy, exact
+permissions policy (statement-by-statement), and the recreation steps**
+live in [`docs/iam-role-setup.md`](docs/iam-role-setup.md) if that ever
+needs to happen again.
 
 ## Running the tests
 
